@@ -1,57 +1,75 @@
-// --- VARIABLES, CONSTANTES Y ARRAYS ---
-const INSTITUCION = "CONICET - IDECU - FILO";
-let inventario = [];
-let continuar = true;
+// --- CLASE PARA OBJETOS ---
+class Hallazgo {
+    constructor(id, tipo, material) {
+        this.id = id.toUpperCase();
+        this.tipo = tipo;
+        this.material = material;
+        this.fecha = new Date().toLocaleDateString();
+    }
+}
+
+// --- SELECTORES DEL DOM ---
+const formulario = document.querySelector("#formulario-hallazgo");
+const contenedorLista = document.querySelector("#lista-hallazgos");
+const btnLimpiar = document.querySelector("#btn-limpiar");
+
+// --- LÓGICA DE STORAGE ---
+// Intentamos cargar datos previos de localStorage o inicializamos array vacío
+let inventario = JSON.parse(localStorage.getItem("inventarioArqueologico")) || [];
 
 // --- FUNCIONES ---
 
-// 1. Función de Entrada de Datos
-function solicitarDatosHallazgo() {
-    let id = prompt("Ingrese el código de la pieza (ej. Sitio-001):");
-    let tipo = prompt("Tipo de hallazgo (ej. Cerámica, Lítico, Óseo):");
-    let material = prompt("Material predominante:");
-    
-    return { id, tipo, material };
+// Función para renderizar el inventario en el HTML
+function mostrarInventario() {
+    contenedorLista.innerHTML = ""; // Limpiamos antes de redibujar
+
+    inventario.forEach((pieza, index) => {
+        const div = document.createElement("div");
+        div.classList.add("pieza-card");
+        div.innerHTML = `
+            <p><strong>ID:</strong> ${pieza.id}</p>
+            <p><strong>Tipo:</strong> ${pieza.tipo}</p>
+            <p><strong>Material:</strong> ${pieza.material}</p>
+            <small>Registrado el: ${pieza.fecha}</small>
+            <hr>
+        `;
+        contenedorLista.appendChild(div);
+    });
 }
 
-// 2. Función de Procesamiento
-function agregarAlInventario(pieza) {
-    if (pieza.id && pieza.tipo) {
-        inventario.push(pieza);
-        console.log("Pieza registrada: " + pieza.id);
-    } else {
-        alert("Error: Datos incompletos. La pieza no fue registrada.");
-    }
+// Función para guardar en LocalStorage
+function guardarEnStorage() {
+    localStorage.setItem("inventarioArqueologico", JSON.stringify(inventario));
 }
 
-// 3. Función de Salida de Datos
-function mostrarResumen() {
-    let listado = "Resumen de Campaña (" + INSTITUCION + "):\n";
-    
-    // Ciclo de iteración para recorrer el array
-    for (let i = 0; i < inventario.length; i++) {
-        listado += (i + 1) + ". ID: " + inventario[i].id + " | Tipo: " + inventario[i].tipo + "\n";
-    }
+// --- EVENTOS ---
 
-    if (inventario.length > 0) {
-        alert(listado);
-        console.table(inventario); // Muestra una tabla estética en consola
-    } else {
-        alert("No se registraron hallazgos en esta sesión.");
-    }
-}
+// Evento de envío de formulario
+formulario.addEventListener("submit", (e) => {
+    e.preventDefault(); // Evita que la página se recargue
 
-// --- ALGORITMO PRINCIPAL CON CICLO Y CONDICIONAL ---
+    // Captura de datos de los inputs
+    const id = document.querySelector("#input-id").value;
+    const tipo = document.querySelector("#input-tipo").value;
+    const material = document.querySelector("#input-material").value;
 
-alert("Bienvenido al Sistema de Registro de Campaña - " + INSTITUCION);
+    // Crear instancia y procesar
+    const nuevaPieza = new Hallazgo(id, tipo, material);
+    inventario.push(nuevaPieza);
 
-while (continuar) {
-    let nuevaPieza = solicitarDatosHallazgo();
-    agregarAlInventario(nuevaPieza);
+    // Actualizar Interfaz y Storage
+    guardarEnStorage();
+    mostrarInventario();
 
-    // Confirm devuelve true/false
-    continuar = confirm("¿Desea registrar otra pieza arqueológica?");
-}
+    formulario.reset(); // Limpia los campos
+});
 
-// Invocación final para mostrar resultados
-mostrarResumen();
+// Evento para limpiar todo el inventario
+btnLimpiar.addEventListener("click", () => {
+    inventario = [];
+    localStorage.clear();
+    mostrarInventario();
+});
+
+// Ejecución inicial al cargar la página
+mostrarInventario();
