@@ -15,7 +15,7 @@ const btnLimpiar = document.querySelector("#btn-limpiar");
 
 // --- LÓGICA DE STORAGE ---
 // Intentamos cargar datos previos de localStorage o inicializamos array vacío
-let inventario = JSON.parse(localStorage.getItem("inventarioArqueologico")) || [];
+let inventario = JSON.parse(localStorage.getItem("inventario Arqueologico")) || [];
 
 // --- FUNCIONES ---
 
